@@ -1,0 +1,56 @@
+<div>
+			<?php 
+			$resources_allocation    = $wpdb->prefix.'resources_allocation';
+       		$resources_allocation_results = $wpdb->get_results( "SELECT * FROM $resources_allocation where resource_id = $resource_id" );
+			
+			if( !empty($resources_allocation_results)) {
+				$total_allocation = $resources_allocation_results[0]->allocation;
+				$allocation = 100 - $total_allocation;
+				if ($allocation < 0 ) {
+					echo "0%";
+				}
+				else {
+				echo $allocation."%";
+				}
+			}
+			else {
+					echo '100%';
+			} ?>
+			</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
+<div class="datatable">
+	<div  style="border: 1px solid;"><b><h1>Resources Detail</h1></b></div>
+	<div class="content">
+		<div class="row science">
+			<div ><h1> Resource Name </h1> </div>
+			<div><h1>Availability</h1></div>
+			<div><h1>Details</h1></div>
+		</div>
+		<?php foreach ( $resources as $resource ) { 
+		$resource_id = $resource->ID; 
+		$resource_name = get_the_title($resource_id); ?>
+		<div class="row science">
+			<div><?php echo $resource_name;  ?>
+			</div>
+			
+			<div><a class="button button-primary">More Details</a></div>
+		</div>
+	<?php 
+}   ?>
+	</div>
