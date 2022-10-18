@@ -11,7 +11,35 @@ if (!class_exists('RM_Resource')) {
         public function __construct() {
             add_action('init', [$this, 'register_resource_post_type']);
 			add_action( 'save_post_resource', [$this, 'saving_cpt_resources_to_allocation_table'], 10, 3 );
+			add_action( 'after_delete_post', [$this,'wpdocs_my_func'],10, 2 );
         }
+		
+		public function wpdocs_my_func( $postid, $post ) {
+
+			// We check if the global post type isn't ours and just return
+			global $post_type, $wpdb;   
+			
+			if ( 'resource' !== $post->post_type ) {
+				return;
+			}
+
+			$resources_allocation    = $wpdb->prefix.'resources_allocation';
+			$wpdb->delete(
+				$resources_allocation,
+				array(
+					'resource_id' => $post->ID,
+				)
+			);
+
+			$projects_resources    = $wpdb->prefix.'projects_resources';
+			$wpdb->delete(
+				$projects_resources,
+				array(
+					'resource_id' => $post->ID,
+				)
+			);
+			
+		}
 
         public function register_resource_post_type(){
     	  	$supports = array(
@@ -82,25 +110,49 @@ if (!class_exists('RM_Resource')) {
 
 		public function saving_cpt_resources_to_allocation_table($post_id, $post, $update){
 			
+			if ( $update ) {	
+
+				global $wpdb, $post;
+				$resources_allocation    = $wpdb->prefix.'resources_allocation';
+				$resouurce_id = $post_id;
+				$resouurce_name = get_the_title($post_id);
+				
+					$insert_record = $wpdb->update(
+						$resources_allocation, array(
+							'resource_id'       => $resouurce_id,
+							'resource_name'       => $resouurce_name,
+						), array (
+							'resource_id' => $resouurce_id 
+						)
+					);
+
+				$projects_resources    = $wpdb->prefix.'projects_resources';
+				$resouurce_id = $post_id;
+				$resouurce_name = get_the_title($post_id);
+					
+					$insert_record = $wpdb->update(
+						$projects_resources, array(
+							'resource_name'       => $resouurce_name,
+						), array (
+							'resource_id' => $resouurce_id 
+						)
+					);
+
+				return;
+			}
 			global $wpdb, $post;
 			
 			$resources_allocation    = $wpdb->prefix.'resources_allocation';
-		
-
-			$post_type = get_post_type($post_id);
+			$resouurce_id = $post_id;
+			$resouurce_name = get_the_title($post_id);
 			
-			if ( $update ) {
-				return;
-			}
-				
 				$insert_record = $wpdb->insert(
 					$resources_allocation, array(
-						'resource_id'       => $post_id,
+						'resource_id'       => $resouurce_id,
+						'resource_name'       => $resouurce_name,
+
 						'allocation'        => 0,
-					), array(
-						'%d',
-						'%d',
-					)
+					),
 				);
 		}
 	}

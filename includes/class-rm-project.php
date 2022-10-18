@@ -77,26 +77,26 @@ if (!class_exists('RM_Project')) {
             $projects_resources = $wpdb->get_results( "SELECT * FROM $projects_resources where project_id = $project_id");
 
 			?>
-			<table>
+			<table class="resource-data-table">
 				<thead>
 					<tr>
-						<th style="width:9%">
-							Resource ID
+						<th class="resource-column" >
+							<h3> Resource ID </h3>
 						</th>
-						<th style="width:9%">
-							Resource Name
+						<th class="resource-column">
+							<h3> Resource Name </h3>
 						</th>
-						<th style="width:9%">
-							Allocation
+						<th class="resource-column">
+							<h3> Allocation </h3>
 						</th>
-						<th style="width:9%">
-							Assign Date
+						<th class="resource-column" >
+							<h3> Assign Date </h3>
 						</th>
-						<th style="width:9%">
-							Status
+						<th class="resource-column">
+							<h3> Status </h3>
 						</th>
-						<th style="width:9%">
-							UnAssign
+						<th class="resource-column" >
+							<h3> UnAssign </h3>
 						</th>
 					</tr>
 				</thead>
@@ -110,27 +110,35 @@ if (!class_exists('RM_Project')) {
 				$resource_name = get_the_title( $resource_id ); 
 				?>
 					<tr>
-						<td class="manage-column" style="width:9%" > <?php echo $resource_id ?> </td>
-						<td class="manage-column" style="width:9%"> <?php echo $resource_name ?> </td>
-						<td class="manage-column" style="width:9%"> <?php echo $allocation ?> </td>
-						<td class="manage-column" style="width:9%"> <?php echo $assign_date ?> </td>
-						<td class="manage-column" style="width:9%"> <?php echo $status ?> </td>
+						<td class="resource-column" style="text-align:center;"> 
+							<?php echo $resource_id ?> 
+						</td>
+						<td class="resource-column" style="text-align:center;"> 
+							<?php echo $resource_name ?> 
+						</td>
+						<td class="resource-column" style="text-align:center;"> 
+							<?php echo $allocation ?> 
+						</td>
+						<td class="resource-column" style="text-align:center;"> 
+							<?php echo $assign_date ?> 
+						</td>
+						<td class="resource-column" style="text-align:center;"> 
+							<?php if($status == 1){ echo "Working"; } if($status == 0){ echo "Un-Assign"; }   ?>
+						</td>
 						<?php 
 						if($status == 1){  ?>
-							<td class="manage-column" style="width:9%"> 
-								<a class="button button-primary un_assign" data-pro-id="<?php echo $project_id ?>"   data-res-id="<?php echo $resource_id ?>">Un Assign</a> 
+							<td class="manage-column" style="width:9%; text-align:center;"> 
+								<a class="button button-primary un_assign"  data-pro-id="<?php echo $project_id ?>"   data-res-id="<?php echo $resource_id ?>">Un Assign</a> 
 							</td>
 						<?php } 
-						if($status == 2) { ?>
-							<td class="manage-column" style="width:9%"> 
-								<a class="button button-primary" disabled>....................</a>
+						if($status == 0) { ?>
+							<td class="manage-column" style="width:9%; text-align:center;"> 
+								<a class="button button-primary"  disabled>Not Working</a>
 							</td>
 						<?php } ?>
 						
 					</tr>
 				<?php
-
-
 			} 
 			?>	
 
@@ -154,14 +162,14 @@ if (!class_exists('RM_Project')) {
 			
 			$wpdb->update(
 				$projects_resources, array(
-					'status'            => 2,
+					'status'            => 0,
 				), array( 
 					'resource_id' => $resource_id,
 					'project_id' => $project_id
 				)
 			);
 			
-			$projects_resources_result = $wpdb->get_results( " SELECT allocation FROM $projects_resources WHERE resource_id = $resource_id and project_id = $project_id" );
+			$projects_resources_result = $wpdb->get_results( " SELECT allocation FROM $projects_resources WHERE resource_id = $resource_id and project_id = $project_id  ORDER BY updated_at DESC" );
 			$project_allocation = $projects_resources_result[0]->allocation;
 
 			$resources_allocation    = $wpdb->prefix.'resources_allocation';
@@ -170,6 +178,7 @@ if (!class_exists('RM_Project')) {
 			$resources_allocation_id = $resources_allocation_result[0]->ID;
             $resource_allocation = $resources_allocation_result[0]->allocation;
             $fianal_allocation = $resource_allocation - $project_allocation;
+
 
                 if($resources_allocation_id) {
                     $insert_record = $wpdb->update(

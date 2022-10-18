@@ -18,20 +18,6 @@ if (!class_exists('RM_Loader')) {
     class RM_Loader {
 
         public function __construct() { 
-            // $resource_id = 194;
-            // $project_id = 195;
-            // global $wpdb;
-            
-            // $projects_resources    = $wpdb->prefix.'projects_resources';
-            // $projects_resources_data = $wpdb->get_results( " SELECT allocation FROM $projects_resources WHERE resource_id = $resource_id and project_id = $project_id" );
-            // $project_allocation = $projects_resources_data[0]->allocation;
-          
-            
-            // echo "<pre>";
-            // print_r($project_allocation); 
-            // echo "</pre>";
-            
-            // die();
 
             $this->includes();
             add_action('admin_enqueue_scripts', [$this, 'admin_style_and_scripts']);
@@ -42,7 +28,11 @@ if (!class_exists('RM_Loader')) {
         public function admin_style_and_scripts() {
             wp_enqueue_style( 'rm-style', RM_PLUGIN_URL . 'assets/css/style.css' );
             wp_enqueue_script('rm-script', RM_PLUGIN_URL . 'assets/js/script.js', array('jquery'), wp_rand());
-            wp_localize_script('rm-script', 'localize', array('ajaxurl' => admin_url('admin-ajax.php')));       
+            wp_localize_script('rm-script', 'localize', array('ajaxurl' => admin_url('admin-ajax.php')));
+           
+            wp_enqueue_style( 'select2-css', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css', array(), '4.1.0-rc.0');
+            wp_enqueue_script( 'select2-js', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', 'jquery', '4.1.0-rc.0');
+            // wp_enqueue_script( 'select2-init', '/wp-content/plugins/select-2-tutorial/select2-init.js', 'jquery', '4.1.0-rc.0');
         }
 
         /**
@@ -65,21 +55,6 @@ if (!class_exists('RM_Loader')) {
 
         public function filter_resources_page(){
             global $wpdb;
-
-            // $curentpage = get_query_var('paged');
-            // $resources = get_posts([
-            //     'post_type' => 'resource',
-            //     'post_status' => 'publish',
-            //     'numberposts' => -1,
-            //     'posts_per_page' => '3',
-            //     'paged' => $curentpage
-            //     // 'order'    => 'ASC'
-            //   ]);
-              
-
-
-            // $resources_allocation    = $wpdb->prefix.'resources_allocation';
-            // $results = $wpdb->get_results( "SELECT * FROM $resources_allocation" );
             include RM_ABSPATH . '/templates/admin/resource-manager.php'; 
         }
         /**
@@ -122,6 +97,7 @@ if (!class_exists('RM_Loader')) {
                 $sql = "CREATE TABLE $table_name_1 (
                         ID BIGINT(20) NOT NULL AUTO_INCREMENT,
                         `resource_id` BIGINT(20) NOT NULL,
+                        resource_name VARCHAR(250),
                         `allocation` VARCHAR(225),
                         updated_at TIMESTAMP,
                         created_at TIMESTAMP,
@@ -136,7 +112,9 @@ if (!class_exists('RM_Loader')) {
                 $sql2 = "CREATE TABLE $table_name_2 (
                         ID BIGINT(20) NOT NULL AUTO_INCREMENT,
                         project_id BIGINT(20) NOT NULL,
+                        `project_name` VARCHAR(225),
                         resource_id BIGINT(20) NOT NULL,
+                        `resource_name` VARCHAR(225),     
                         `allocation` VARCHAR(225),
                         `status` VARCHAR(225),
                         updated_at TIMESTAMP,

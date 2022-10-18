@@ -1,15 +1,90 @@
 
+.avail-red {
+  background-color: rgb(245, 4, 4);
+  color: #050505;
+}
+.avail-green {
+  background-color: rgb(65, 250, 9);
+  color: #050505;
+}
+.avail-yellow {
+  background-color:yellow;
+  color: #050505;
+}
+.avail-orange {
+  background-color: rgb(243, 158, 0);
+  color: #050505;
+}
+
+
+.resource-data-table {
+  border-collapse: collapse;
+  margin: 25px 0;
+  font-size: 1.2em;
+  min-width: 400px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+  
+}
+.resource-data-table th,
+.resource-data-table td {
+    padding: 17px 22px;
+    border: 2px solid black;
+}
+
+.project-data-table {
+  border-collapse: collapse;
+  margin: 35px 0;
+  font-size: 1.2em;
+  min-width: 400px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+  
+}
+.resource-data-table th,
+.resource-data-table td {
+    padding: 20px 25px;
+   
+}
+
+
+
+
+.resource-column{
+  width: 9%;
+}
+
 .datatable {
-	width: 80%;
+	width: 85%;
+	margin: auto;
+	text-align: center;
+	background-color: #fff;
+	padding: 10px;
+	border-radius: 5px;
+}
+.filters{
+  float: left;
+  padding: 20px;
+  display: inline;
+}
+.main_filter {
+	width: 83%;
 	margin: auto;
 	text-align: center;
 	background-color: #fff;
 	padding: 20px;
 	border-radius: 5px;
 }
-.datatable input {
-	display: none;
+
+
+.main_heading {
+  width: 85%;
+	margin: auto;
+	text-align: center;
+	background-color: #fff;
+	padding: 10px;
+	border-radius: 5px;
+  margin-top: 5%;
 }
+
 .datatable h2 {
 	text-align: left;
 	margin: 0 0 10px;
@@ -195,3 +270,4 @@ fieldset {
 :-ms-input-placeholder {
   color: #888;
 }
+

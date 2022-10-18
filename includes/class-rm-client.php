@@ -10,7 +10,59 @@ if (!class_exists('RM_Client')) {
 
         public function __construct() {
             add_action('init', [$this, 'register_client_post_type']);
+			add_action( 'add_meta_boxes', [$this, 'client_meta_box']) ;
         }
+
+		/**
+    	 * Create meta box to display all projects of this Client.
+    	 * */
+    	public function client_meta_box(){
+    		global $post;
+			$screen = 'client';
+			add_meta_box('my-meta-box-id','All Project of Client',[$this, 'assigned_resources_list'],$screen,'normal','high');
+    	}
+    	
+    	/**
+    	 * data view of assigned resources to a project
+    	 * */
+    	public function assigned_resources_list($project){
+    		
+			global $wpdb ,$post;
+			$args= array(
+				'post_type' => 'project',
+				'meta_query' => array(
+					array(
+						'key' => 'client',
+						'value' => $post->ID,
+					)
+				)
+			);
+		
+			$projects_query = new WP_Query( $args );
+			?>
+			<table class ="project-data-table">
+				<tbody>	
+					<?php
+						if( $projects_query->post_count){
+							foreach($projects_query->posts as $project){	
+								?> 
+								<tr>
+									<td> <h1>
+										<?php
+											echo $project->post_title;  
+										?> </h1>
+									</td> 
+								</tr>
+								<?php		
+							}
+						}
+					?>
+				</tbody>
+			</table>
+			<?php
+							
+		}
+
 
         public function register_client_post_type(){
 			$supports = array(
