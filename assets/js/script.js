@@ -41,8 +41,9 @@ jQuery(document).ready(function ($) {
                   project_id: project_id 
               },
               success: function (data) {
-                console.log(data);
-                $(this).attr('disabled',true);
+                // console.log(data);
+                location.reload();
+                // $(this).attr('disabled',true);
                   
               }
           });
@@ -65,13 +66,6 @@ jQuery(document).ready(function ($) {
           location.reload();
           return false;
         }
-        // if(resource_name == "" && availability == "checked"){
-        //   $("#project_resources_table").hide();
-        //   $('#pr-pagination').hide();
-        //   $("#resource_allocation_table").show();
-        //   console.log("resource name == null and check is true");
-        //   return false;
-        // } 
         jQuery.ajax({
           url: localize.ajaxurl,
             type: 'POST',
@@ -112,14 +106,14 @@ jQuery(document).ready(function ($) {
       $('#designation').on('change', function() {
         var designation = $(this).val();
         var availability = $("#availability").val();
-        
+
         if($("#availability").prop("checked") == true){
           var availability = "checked";
-          // console.log("var availability == checked");
+      
         }
         else if($("#availability").prop("checked") == false){
           var availability = "Unchecked";
-          // console.log("var availability == Unchecked");
+        
         }
 
         jQuery.ajax({
@@ -131,9 +125,7 @@ jQuery(document).ready(function ($) {
                 availability: availability
             },
             success: function (data) {
-              $('#pr-pagination').hide();
-
-  
+              $('#pr-pagination').hide(); 
               if($("#availability").prop("checked") == true){
                 $("#project_resources_table").hide();
                 $("#resource_allocation_table").show();
@@ -145,11 +137,37 @@ jQuery(document).ready(function ($) {
                 $("#project_resources_table tbody").html(data.table);
                 console.log(data.table);
                 console.log(data);
-              }
-            
+              }    
             }
         });
+      });
 
+
+
+      $('#status').on('change', function() {
+        
+        var status = $(this).val();
+   
+        if(status == "1"){
+          location.reload();
+          return false;
+        }
+     
+        jQuery.ajax({
+          url: localize.ajaxurl,
+            type: 'POST',
+            data: {  
+                action: 'rm_resource_status',  
+                status: status
+            },
+            success: function (data) {
+              $('#pr-pagination').hide();                   
+                $("#project_resources_table tbody").html(data.table);
+                console.log(data.table);
+                console.log(data);
+                  
+            }
+        });
       });
 
 

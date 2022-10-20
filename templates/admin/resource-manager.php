@@ -47,6 +47,15 @@
 <div class="main_filter">
 	
 	<h1 style="margin-bottom: 20px;"> Resources Details </h1>
+	<div class="filters">
+		<select class="select-dataa" id="designation" style="width:130px;" name="resource">
+			<option value="">Search By Role</option>
+			<option value="pm">Project Manager</option>
+			<option value="bd">Backend Developer</option>
+			<option value="fd">Frontend Developer</option>
+			<option value="sqa">Software Quality Assurance</option>
+      </select>
+	</div> 
 	<div class="filters"> 		
 		<input type="text" style="width:120px;" placeholder="Resource Name" id="resource_name"  name="resource_name">
 	</div> 
@@ -61,23 +70,15 @@
 	<div class="filters">
 	<a id="searching_button" style="width:80px;" class="button button-primary"> Search </a>
 	</div>
-	<div class="filters">
-		<select class="select-dataa" id="designation" style="width:140px;" name="resource">
-			<option value="">Search By Role</option>
-				<?php
-					foreach(RM_Main::get_designation_data() as $key => $value){
-						echo "<option value={$key}>{$value}</option>";
-					}
-				?>
-      </select>
-	</div> 
+	
 	<div class="filters"> 
-		<select class="select-dataa" style="width:140px;" name="resource">
-			<option value="">Un Assigned Resources</option>
+		<select class="select-dataa" id="status" style="width:140px;" name="resource">
+			<option value="">Resource Status</option>
+			<option value="1">Working</option>
+			<option value="0">Not Working</option>
 			
       </select>
-	</div> 
-	
+	</div>
 </div>
 <div class="datatable">
 	<table class ="resource-data-table" id="resource_allocation_table" style="display:none;">
@@ -129,10 +130,11 @@
 				$items_per_page = 10;
 				$page = isset( $_GET['cpage'] ) ? abs( (int) $_GET['cpage'] ) : 1;
 				$offset = ( $page * $items_per_page ) - $items_per_page;
-				$projects_resources_results = $wpdb->get_results( "SELECT * FROM $projects_resources  LIMIT ${offset}, ${items_per_page}");
-	
+				$quary = "SELECT * FROM $projects_resources where status = 1  LIMIT ${offset}, ${items_per_page}";
+				$projects_resources_results = $wpdb->get_results( $quary);
+					
 				foreach($projects_resources_results as $key => $projects_resources_result){
-
+					
 					$resource_id = $projects_resources_result->resource_id;
 					$resourse_name = $projects_resources_result->resource_name;
 					$project_id = $projects_resources_result->project_id;
@@ -141,14 +143,15 @@
 					$project_name = $projects_resources_result->project_name;
 					$status = $projects_resources_result->status;
 					$allocation = $projects_resources_result->allocation;
-					$designation = get_the_terms($resource_id,'designation');
+					$designation = get_post_meta($resource_id,"resource_position",true);
+					// print_r($designation); die();
 					?>
 					<tr>
 						<td class="resource-column" >
 							<?php echo $resourse_name;  ?>	
 						</td>
 						<td class="resource-column" > 
-							<?php echo $designation[0]->name; ?>
+							<?php echo $designation; ?>
 						</td>
 						<td class="resource-column" > 
 							<?php echo $project_name; ?>
@@ -158,7 +161,7 @@
 						</td>
 						
 						<td class="resource-column" >  
-							<?php if($status == 1){ echo "Working"; } if($status == 0){ echo "Un-Assign"; }   ?>
+							<?php echo "Working"   ?>
 						</td>
 						<td class="resource-column" >  
 							<?php echo $allocation."%"; ?>

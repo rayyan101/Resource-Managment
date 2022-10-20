@@ -21,6 +21,7 @@ if (!class_exists('RM_Main')) {
             add_action('wp_ajax_rm_unassign_resource' , [ $this, 'rm_unassign_resource' ]);
             add_action('wp_ajax_rm_resource_data_searching' , [ $this, 'rm_resource_data_searching' ]);
             add_action('wp_ajax_rm_resource_designation' , [ $this, 'rm_resource_designation' ]);
+            add_action('wp_ajax_rm_resource_status' , [ $this, 'rm_resource_status' ]);
 	
         }
 
@@ -70,23 +71,23 @@ if (!class_exists('RM_Main')) {
         /**
          * get designation of resources.
          **/
-        public static function get_designation_data() {
+    //     public static function get_designation_data() {
 
-            $wp_categories = get_categories(
-				array(
-					'taxonomy' => 'designation',
-					'limit'    => -1,
-				)
-			);
-			$categories    = array();
+    //         $wp_categories = get_categories(
+	// 			array(
+	// 				'taxonomy' => 'designation',
+	// 				'limit'    => -1,
+	// 			)
+	// 		);
+	// 		$categories    = array();
 
-			if ( ! empty( $wp_categories ) ) {
-				foreach ( $wp_categories as $wp_category ) {
-					$categories[ $wp_category->term_id ] = $wp_category->name;
-				}
-			}
-			return $categories;
-       }
+	// 		if ( ! empty( $wp_categories ) ) {
+	// 			foreach ( $wp_categories as $wp_category ) {
+	// 				$categories[ $wp_category->term_id ] = $wp_category->name;
+	// 			}
+	// 		}
+	// 		return $categories;
+    //    }
 
         /**
          * Assign a project to resource
@@ -208,8 +209,7 @@ if (!class_exists('RM_Main')) {
                     $resource_id = $resources_allocation_result->resource_id; 
                     $allocation = $resources_allocation_result->allocation;
                     $resource_name = get_the_title($resource_id);
-                    $designation_array = get_the_terms($resource_id,'designation');
-                    $designation = $designation_array[0]->name;
+                    $designation = get_post_meta($resource_id,"resource_position",true);
 
                     if($allocation > 100) { 
                         $availability = $allocation - $allocation;
@@ -266,11 +266,11 @@ if (!class_exists('RM_Main')) {
 
                 global $wpdb;
                 $projects_resources = $wpdb->prefix.'projects_resources';
-                $quary = "SELECT * FROM $projects_resources WHERE resource_name = '{$resource_name}' and project_name = '{$project_name}'";
+                $quary = "SELECT * FROM $projects_resources WHERE status = 1 and resource_name = '{$resource_name}' and project_name = '{$project_name}'";
                 $projects_resources_results = $wpdb->get_results($quary);
 
                 if(!$projects_resources_results) {
-                    $quary = "SELECT * FROM $projects_resources WHERE resource_name = '{$resource_name}' or project_name = '{$project_name}'";
+                    $quary = "SELECT * FROM $projects_resources WHERE status = 1 and resource_name = '{$resource_name}' or project_name = '{$project_name}'";
                     $projects_resources_results = $wpdb->get_results($quary);
                 }               
 
@@ -285,34 +285,19 @@ if (!class_exists('RM_Main')) {
                     $status = $projects_resources_result->status;
                     $allocation = $projects_resources_result->allocation;
                     $date_deadline = date('m-d-Y ',strtotime($deadline));
-                    $designation = get_the_terms($resource_id,'designation');        
+                    $designation = get_post_meta($resource_id,"resource_position",true);        
                     
-                    if($status == 1){
                         $response['table'] .= "
         
-                        <tr>
-                            <td class='manage-column'> {$resourse_name} </td>
-                            <td class='manage-column'> {$designation[0]->name} </td>
-                            <td class='manage-column'> {$project_name} </td>
-                            <td class='manage-column'> {$date_deadline} </td>                       
-                            <td class='manage-column'> Working </td>
-                            <td class='manage-column'> {$allocation} </td>
-                        </tr> 
+                            <tr>
+                                <td class='manage-column'> {$resourse_name} </td>
+                                <td class='manage-column'> {$designation} </td>
+                                <td class='manage-column'> {$project_name} </td>
+                                <td class='manage-column'> {$date_deadline} </td>                       
+                                <td class='manage-column'> Working </td>
+                                <td class='manage-column'> {$allocation} </td>
+                            </tr> 
                         ";                
-                    } 
-                    if($status == 0){
-                        $response['table'] .= "
-        
-                        <tr>
-                            <td class='manage-column'> {$resourse_name} </td>
-                            <td class='manage-column'> {$designation[0]->name} </td>
-                            <td class='manage-column'> {$project_name} </td>
-                            <td class='manage-column'> {$date_deadline} </td>  
-                            <td class='manage-column'> Not Working </td>
-                            <td class='manage-column'> {$allocation} </td>
-                        </tr> 
-                        ";          
-                    } 
                 }
                 
                 if(!$projects_resources_results) {
@@ -333,110 +318,98 @@ if (!class_exists('RM_Main')) {
         public function rm_resource_designation() {
 
             $designation = $_REQUEST['designation'];
+
+            if($designation == 'pm'){ $designation = "Project Manager"; }
+            if($designation == 'bd'){ $designation = "Backend Developer"; }
+            if($designation == 'fd'){ $designation = "Frontend Developer"; }
+            if($designation == 'sqa'){ $designation = "Software Quality Assurance"; }
+
             $availability = $_REQUEST['availability'];
-
+            
             if($availability=="Unchecked") {
-          
-                $args = [
-                    'post_type' => 'resource',
-                    'tax_query' => [
-                        [
-                            'taxonomy' => 'designation',
-                            'terms' => $designation,
-
-                        ],
-                    ],
-                ];
-                $posts = get_posts($args);
-
-                foreach($posts as $post) {
-
-                $resourc_id = $post->ID;
+                
+                global $wpdb;
+                $args = array (
+                    'post_type'              => 'resource',
+                    'meta_query' => array(
+                        array(
+                            'key' => 'resource_position',
+                            'value' => $designation,
+                        )
+                    )
+                );
+                
+                $post_query = new WP_Query( $args );                
+                // if( $post_query->post_count){                
+                // } 
+                foreach($post_query->posts as $resource) {
+                    
+                $resourc_id = $resource->ID;
+                // 
                 global $wpdb;
                 $projects_resources = $wpdb->prefix.'projects_resources';
-                $quary = "SELECT * FROM $projects_resources WHERE resource_id = $resourc_id";
+                $quary = "SELECT * FROM $projects_resources WHERE status = 1 and resource_id = $resourc_id";
                 $projects_resources_results = $wpdb->get_results($quary);
-                
+                // print_r($quary); exit;
                     foreach($projects_resources_results as $projects_resources_result){
-                        // print_r($quary); print_r($projects_resources_results); exit;
-                        $resourse_id = $projects_resources_result->resource_id;
-                        $resourse_name = $projects_resources_result->resource_name;
+                        // 
+                        $resource_id = $projects_resources_result->resource_id;
+                        $resource_name = $projects_resources_result->resource_name;
                         $project_id = $projects_resources_result->project_id;
                         $post_id = $project_id;
                         $deadline = get_post_meta($post_id,"deadline",true);
                         $project_name = $projects_resources_result->project_name;
                         $allocation = $projects_resources_result->allocation;
                         $date_deadline = date('m-d-Y ',strtotime($deadline));
-                        $designation = get_the_terms($resourc_id,'designation');
+                        $designation = get_post_meta($resource_id,"resource_position",true);
+                        // print_r($designation); exit;
 
-                        if($status == 1){
                             $response['table'] .= "
                                 <tr>
-                                    <td class='manage-column'> {$resourse_name} </td>
-                                    <td class='manage-column'> {$designation[0]->name}  </td>
+                                    <td class='manage-column'> {$resource_name} </td>
+                                    <td class='manage-column'> {$designation}   </td>
                                     <td class='manage-column'> {$project_name} </td>
                                     <td class='manage-column'> {$date_deadline} </td>  
                                     <td class='manage-column'> Working </td>
                                     <td class='manage-column'> {$allocation} </td>
                                 </tr> 
                             ";
-                        }
-                        if($status == 0){
-                            $response['table'] .= "
-                                <tr>
-                                    <td class='manage-column'> {$resourse_name} </td>
-                                    <td class='manage-column'> {$designation[0]->name}  </td>
-                                    <td class='manage-column'> {$project_name} </td>
-                                    <td class='manage-column'> {$date_deadline} </td>  
-                                    <td class='manage-column'> Not Working </td>
-                                    <td class='manage-column'> {$allocation} </td>
-                                </tr> 
-                            ";
-                        }  
-                    }
-
-                    if(!$projects_resources_results) {
-                        
-                        $response['table'] .= "
-                            <tr>
-                                <td class='manage-column' colspan='6'> Record Not Found </td>
-                            </tr> 
-                        "; 
-                    }
-                    return $this->response_json($response);                    
+                    }                                        
                 }
+                return $this->response_json($response);
             }
 
             if($availability=="checked") {
                 
-                $args = [
-                    'post_type' => 'resource',
-                    'tax_query' => [
-                        [
-                            'taxonomy' => 'designation',
-                            'terms' => $designation,
-
-                        ],
-                    ],
-                ];
-                $posts = get_posts($args);
+                global $wpdb;
+                $args = array (
+                    'post_type'              => 'resource',
+                    'meta_query' => array(
+                        array(
+                            'key' => 'resource_position',
+                            'value' => $designation,
+                        )
+                    )
+                );
                 
-                foreach($posts as $post) {
-                    
-                $resourc_id = $post->ID;
+                $post_query = new WP_Query( $args );  
+                
+                foreach($post_query->posts as $resource) {
+                    // print_r($post_query->posts); exit;  
+                $resourc_id = $resource->ID;
+                // 
                 global $wpdb;
                 $resource_allocation = $wpdb->prefix.'resources_allocation';
                 $quary = "SELECT * FROM $resource_allocation WHERE resource_id = $resourc_id";
                 $resources_allocation_results = $wpdb->get_results($quary);
-                // print_r($resource_allocation_results); exit; 
+                // print_r($quary); exit;
                 foreach($resources_allocation_results as $resources_allocation_result){
                     
                     $resource_id = $resources_allocation_result->resource_id; 
                     $allocation = $resources_allocation_result->allocation;
                     $resource_name = get_the_title($resource_id);
-                    $designation_array = get_the_terms($resource_id,'designation');
-                    $designation = $designation_array[0]->name;
-                    // print_r($resource_name); exit; 
+                    $designation = get_post_meta($resource_id,"resource_position",true);
+
                     if($allocation > 100) { 
                         $availability = $allocation - $allocation;
                     }
@@ -485,11 +458,63 @@ if (!class_exists('RM_Main')) {
                         "; 
                     }
 
-                    return $this->response_json($response);                    
+                                      
                 }
+                return $this->response_json($response);  
             }
+        }  
+        
+        /**
+         * Ajax Resource Status Filters.
+         * */
+        public function rm_resource_status() {
+            
+            $status = $_REQUEST['status'];   
 
-        }    
+            if(!$designation){ 
+            
+                global $wpdb;
+                $projects_resources = $wpdb->prefix.'projects_resources';
+                $quary = "SELECT * FROM $projects_resources WHERE status = $status";
+                $projects_resources_results = $wpdb->get_results($quary);
+                foreach($projects_resources_results as $key => $projects_resources_result){
+
+                    $resource_id = $projects_resources_result->resource_id;
+                    $resourse_name = $projects_resources_result->resource_name;
+                    $project_id = $projects_resources_result->project_id;
+                    $post_id = $project_id;
+                    $deadline = get_post_meta($post_id,"deadline",true);
+                    $project_name = $projects_resources_result->project_name;
+                    $status = $projects_resources_result->status;
+                    $allocation = $projects_resources_result->allocation;
+                    $date_deadline = date('m-d-Y ',strtotime($deadline));
+                    $designation = get_post_meta($resource_id,"resource_position",true);        
+                    
+                        $response['table'] .= "
+        
+                            <tr>
+                                <td class='manage-column'> {$resourse_name} </td>
+                                <td class='manage-column'> {$designation} </td>
+                                <td class='manage-column'> {$project_name} </td>
+                                <td class='manage-column'> {$date_deadline} </td>                       
+                                <td class='manage-column'> Un Assigned </td>
+                                <td class='manage-column'> {$allocation} </td>
+                            </tr> 
+                        ";                
+                }
+                
+                if(!$projects_resources_results) {
+                    $response['table'] .= "
+                        <tr>
+                            <td class='manage-column' colspan='6'> Record Not Found </td>
+                        </tr> 
+                    "; 
+                }
+                return $this->response_json($response);
+            }
+        }
+
+
     }
 }
 $RM_Main = new RM_Main();

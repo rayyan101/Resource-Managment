@@ -16,6 +16,14 @@
   color: #050505;
 }
 
+.resource-project-data-table {
+  border-collapse: collapse;
+  margin: 25px 0;
+  font-size: 1.0em;
+  min-width: 400px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+  
+}
 
 .resource-data-table {
   border-collapse: collapse;

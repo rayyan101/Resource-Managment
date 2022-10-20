@@ -12,7 +12,9 @@ if (!class_exists('RM_Project')) {
             add_action('init', [$this, 'register_project_post_type']);
             add_action( 'add_meta_boxes', [$this, 'projects_meta_box']) ;
 			add_action('wp_ajax_rm_unassign_resource' , [ $this, 'rm_unassign_resource' ]);
-			add_action('wp_ajax_nopriv_rm_unassign_resource' , [ $this, 'rm_unassign_resource']);	
+			add_action('wp_ajax_nopriv_rm_unassign_resource' , [ $this, 'rm_unassign_resource']);
+			//add_action( 'save_post_project', [$this, 'project_status_change'], 9999, 3 );	
+			add_action('acf/save_post', [$this, 'project_status_change']);
         }
 
         public function register_project_post_type(){
@@ -77,25 +79,25 @@ if (!class_exists('RM_Project')) {
             $projects_resources = $wpdb->get_results( "SELECT * FROM $projects_resources where project_id = $project_id");
 
 			?>
-			<table class="resource-data-table">
+			<table class="resource-project-data-table">
 				<thead>
 					<tr>
-						<th class="resource-column" >
+						<th style="width:9%">
 							<h3> Resource ID </h3>
 						</th>
-						<th class="resource-column">
+						<th style="width:9%">
 							<h3> Resource Name </h3>
 						</th>
-						<th class="resource-column">
-							<h3> Allocation </h3>
+						<th style="width:9%">
+							<h3> Allocation % </h3>
 						</th>
-						<th class="resource-column" >
+						<th style="width:9%">
 							<h3> Assign Date </h3>
 						</th>
-						<th class="resource-column">
+						<th style="width:9%">
 							<h3> Status </h3>
 						</th>
-						<th class="resource-column" >
+						<th  style="width:9%">
 							<h3> UnAssign </h3>
 						</th>
 					</tr>
@@ -110,29 +112,29 @@ if (!class_exists('RM_Project')) {
 				$resource_name = get_the_title( $resource_id ); 
 				?>
 					<tr>
-						<td class="resource-column" style="text-align:center;"> 
+						<td  style="text-align:center;"> 
 							<?php echo $resource_id ?> 
 						</td>
-						<td class="resource-column" style="text-align:center;"> 
+						<td  style="text-align:center;"> 
 							<?php echo $resource_name ?> 
 						</td>
-						<td class="resource-column" style="text-align:center;"> 
-							<?php echo $allocation ?> 
+						<td  style="text-align:center;"> 
+							<?php echo $allocation.' %' ?> 
 						</td>
-						<td class="resource-column" style="text-align:center;"> 
+						<td  style="text-align:center;"> 
 							<?php echo $assign_date ?> 
 						</td>
-						<td class="resource-column" style="text-align:center;"> 
+						<td  style="text-align:center;"> 
 							<?php if($status == 1){ echo "Working"; } if($status == 0){ echo "Un-Assign"; }   ?>
 						</td>
 						<?php 
 						if($status == 1){  ?>
-							<td class="manage-column" style="width:9%; text-align:center;"> 
+							<td  style="width:9%; text-align:center;"> 
 								<a class="button button-primary un_assign"  data-pro-id="<?php echo $project_id ?>"   data-res-id="<?php echo $resource_id ?>">Un Assign</a> 
 							</td>
 						<?php } 
 						if($status == 0) { ?>
-							<td class="manage-column" style="width:9%; text-align:center;"> 
+							<td  style="width:9%; text-align:center;"> 
 								<a class="button button-primary"  disabled>Not Working</a>
 							</td>
 						<?php } ?>
@@ -152,7 +154,7 @@ if (!class_exists('RM_Project')) {
 		/**
     	 * Unassign Resource from projetc.
     	 * */
-		public function rm_unassign_resource(){
+		public function rm_unassign_resource() {
 
 			$resource_id = $_REQUEST['resourse_id'];
 			$project_id = $_REQUEST['project_id'];
@@ -189,9 +191,70 @@ if (!class_exists('RM_Project')) {
                         )
                     );
                 }
-
-
 		}
+
+
+		public function project_status_change($post_id){
+			
+			
+
+				global $wpdb, $post;
+				$project_status = get_post_meta($post_id,"project_status",true);
+				
+				if($project_status == "Complete"){
+					print_r($project_status); ;
+					
+					$project_id = $post_id;
+					$projects_resources    = $wpdb->prefix.'projects_resources';
+
+					$quary = "SELECT * FROM $projects_resources WHERE status = 1 and project_id = $project_id";
+                	$projects_resources_results = $wpdb->get_results($quary);
+					
+					// echo "<pre>";
+					// print_r($projects_resources_results->resource_id);
+					// echo "</pre>";
+					 
+					foreach($projects_resources_results as $projects_resources_results) {
+		
+						$resource_id = $projects_resources_results->resource_id;
+						$project_allocation = $projects_resources_results->allocation;
+					 
+						$insert_record = $wpdb->update(
+							$projects_resources, array(
+								'status'       => 0,
+							), array (
+								'resource_id' => $resource_id 
+							)
+						);
+
+						$resources_allocation    = $wpdb->prefix.'resources_allocation';
+						$quary = "SELECT allocation FROM $resources_allocation where resource_id = $resource_id";
+
+                		$total_allocation_result = $wpdb->get_results($quary);
+
+						$total_allocation = $total_allocation_result[0]->allocation; 
+
+						$allocation = $total_allocation - $project_allocation;
+
+						$insert_record = $wpdb->update(
+						$resources_allocation, array(
+							'allocation'       => $allocation,
+		
+						), array (
+							'resource_id' => $resource_id 
+						)
+					);
+
+					}
+			}
+		}
+
+
+
+
+
+
+
 	}         
 }
 
