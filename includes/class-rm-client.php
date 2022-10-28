@@ -23,7 +23,7 @@ if (!class_exists('RM_Client')) {
     	}
     	
     	/**
-    	 * data view of assigned resources to a project
+    	 * View All Projects of Client on Client Page.
     	 * */
     	public function assigned_resources_list($project){
     		
@@ -59,11 +59,12 @@ if (!class_exists('RM_Client')) {
 					?>
 				</tbody>
 			</table>
-			<?php
-							
+			<?php					
 		}
 
-
+		/**
+    	 * Creating Client Post Type.
+    	 * */
         public function register_client_post_type(){
 			$supports = array(
 		        'title', // post title

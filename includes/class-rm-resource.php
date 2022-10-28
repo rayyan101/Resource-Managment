@@ -10,19 +10,66 @@ if (!class_exists('RM_Resource')) {
 
         public function __construct() {
             add_action('init', [$this, 'register_resource_post_type']);
-			add_action( 'save_post_resource', [$this, 'saving_cpt_resources_to_allocation_table'], 10, 3 );
-			add_action( 'after_delete_post', [$this,'wpdocs_my_func'],10, 2 );
+			add_action( 'after_delete_post', [$this,'rm_delete_resource'],10, 2 );
+			add_action('transition_post_status', array( $this, 'so_post_40744782' ), 10, 3 );
         }
-		
-		public function wpdocs_my_func( $postid, $post ) {
 
-			// We check if the global post type isn't ours and just return
+		/**
+    	 * Inserting Resource Data to Resource Allocation Table on Resource Creating.
+		 * */
+		function so_post_40744782( $new_status, $old_status, $post ) {
+			$post_type = get_post_type($post);
+			if ( $new_status == 'publish' && $post_type == "resource" ) {	
+				global $wpdb, $post;
+				$resouurce_id = $post->ID;
+				$post_title = $post->post_title;
+				$resouurce_name = get_the_title($resouurce_id);
+
+				$resources_allocation    = $wpdb->prefix.'resources_allocation';
+                $resources_allocation_result = $wpdb->get_results( " SELECT * FROM $resources_allocation WHERE resource_id = $resouurce_id" );
+                $resources_allocation_id = $resources_allocation_result[0]->ID;
+
+				if($resources_allocation_id) {
+					$insert_record = $wpdb->update(
+						$resources_allocation, array(
+							'resource_id'       => $resouurce_id,
+							'resource_name'       => $resouurce_name,
+						), array (
+							'resource_id' => $resouurce_id 
+						)
+					);
+
+					$projects_resources    = $wpdb->prefix.'projects_resources';					
+					$wpdb->update(
+						$projects_resources, array(
+							'resource_name'       => $resouurce_name,
+						), array (
+							'resource_id' => $resouurce_id 
+						)
+					);
+				}
+				
+				if(!$resources_allocation_id) {
+					$resources_allocation    = $wpdb->prefix.'resources_allocation';	
+					$insert_record = $wpdb->insert(
+						$resources_allocation, array(
+							'resource_id'       => $resouurce_id,
+							'resource_name'       => $resouurce_name,
+							'allocation'        => 0,
+						),
+					);
+				}			
+			}
+		}
+
+		/**
+    	 * Deleting Resource Data from Table when Resource Delete.
+		 * */
+		public function rm_delete_resource( $postid, $post ) {
 			global $post_type, $wpdb;   
-			
 			if ( 'resource' !== $post->post_type ) {
 				return;
 			}
-
 			$resources_allocation    = $wpdb->prefix.'resources_allocation';
 			$wpdb->delete(
 				$resources_allocation,
@@ -37,10 +84,12 @@ if (!class_exists('RM_Resource')) {
 				array(
 					'resource_id' => $post->ID,
 				)
-			);
-			
+			);	
 		}
 
+		/**
+    	 * Creating Resource Post Type.
+		 * */
         public function register_resource_post_type(){
     	  	$supports = array(
 		        'title', // post title
@@ -83,78 +132,29 @@ if (!class_exists('RM_Resource')) {
 			            )
 	    	);
 
-		register_post_type('resource', $args);
+			register_post_type('resource', $args);
 
-        $args_taxonomy = array(
-            'name'              => _x('Resource Designation', 'plural'),
-            'menu_name' => __('Resource Designation', 'resource-management'),
-            'add_new_item'      => __( 'Add New Designation', 'resource-management' ),
-            'search_items'      => __( 'Search Designation', 'resource-management' ),
-            'parent_item'  => null,
-            'parent_item_colon' => null,
-        );
+			$args_taxonomy = array(
+				'name'              => _x('Resource Designation', 'plural'),
+				'menu_name' => __('Resource Designation', 'resource-management'),
+				'add_new_item'      => __( 'Add New Designation', 'resource-management' ),
+				'search_items'      => __( 'Search Designation', 'resource-management' ),
+				'parent_item'  => null,
+				'parent_item_colon' => null,
+			);
 
-        register_taxonomy('designation',array('resource'), array(
-            'hierarchical' => false,
-            'labels'    => $args_taxonomy,
-            'public'    => true,
-            'show_ui'   => true,
-            'show_in_menu'       => 'my_plugin',
-            'show_admin_column' => true,
-            'query_var' => true,
-            'rewrite' => array( 'slug' => 'resource' ),
-            )
-        );
-
+			register_taxonomy('designation',array('resource'), array(
+				'hierarchical' => false,
+				'labels'    => $args_taxonomy,
+				'public'    => true,
+				'show_ui'   => true,
+				'show_in_menu'       => 'my_plugin',
+				'show_admin_column' => true,
+				'query_var' => true,
+				'rewrite' => array( 'slug' => 'resource' ),
+				)
+			);
     	}
-
-		public function saving_cpt_resources_to_allocation_table($post_id, $post, $update){
-			
-			if ( $update ) {	
-
-				global $wpdb, $post;
-				$resources_allocation    = $wpdb->prefix.'resources_allocation';
-				$resouurce_id = $post_id;
-				$resouurce_name = get_the_title($post_id);
-				
-					$insert_record = $wpdb->update(
-						$resources_allocation, array(
-							'resource_id'       => $resouurce_id,
-							'resource_name'       => $resouurce_name,
-						), array (
-							'resource_id' => $resouurce_id 
-						)
-					);
-
-				$projects_resources    = $wpdb->prefix.'projects_resources';
-				$resouurce_id = $post_id;
-				$resouurce_name = get_the_title($post_id);
-					
-					$insert_record = $wpdb->update(
-						$projects_resources, array(
-							'resource_name'       => $resouurce_name,
-						), array (
-							'resource_id' => $resouurce_id 
-						)
-					);
-
-				return;
-			}
-			global $wpdb, $post;
-			
-			$resources_allocation    = $wpdb->prefix.'resources_allocation';
-			$resouurce_id = $post_id;
-			$resouurce_name = get_the_title($post_id);
-			
-				$insert_record = $wpdb->insert(
-					$resources_allocation, array(
-						'resource_id'       => $resouurce_id,
-						'resource_name'       => $resouurce_name,
-
-						'allocation'        => 0,
-					),
-				);
-		}
 	}
 }
 

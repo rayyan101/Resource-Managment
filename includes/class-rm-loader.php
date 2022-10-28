@@ -25,14 +25,15 @@ if (!class_exists('RM_Loader')) {
             add_action( 'init', [$this, 'create_sql_tables']);
         }
 
+        /**
+         * Enqueue Scripts and Style.
+         */
         public function admin_style_and_scripts() {
             wp_enqueue_style( 'rm-style', RM_PLUGIN_URL . 'assets/css/style.css' );
             wp_enqueue_script('rm-script', RM_PLUGIN_URL . 'assets/js/script.js', array('jquery'), wp_rand());
-            wp_localize_script('rm-script', 'localize', array('ajaxurl' => admin_url('admin-ajax.php')));
-           
+            wp_localize_script('rm-script', 'localize', array('ajaxurl' => admin_url('admin-ajax.php')));   
             wp_enqueue_style( 'select2-css', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css', array(), '4.1.0-rc.0');
             wp_enqueue_script( 'select2-js', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', 'jquery', '4.1.0-rc.0');
-            // wp_enqueue_script( 'select2-init', '/wp-content/plugins/select-2-tutorial/select2-init.js', 'jquery', '4.1.0-rc.0');
         }
 
         /**
@@ -53,29 +54,25 @@ if (!class_exists('RM_Loader')) {
 
         }
 
+        /**
+         * Include Template.
+         */
         public function filter_resources_page(){
             global $wpdb;
             include RM_ABSPATH . '/templates/admin/resource-manager.php'; 
         }
+
         /**
          * Include Files depends on screen.
          */
         public function includes() {
-            if (is_admin()) {
+            // if (is_admin()) {
                 // inluding all frontend classes here.
                 include_once 'class-rm-resource.php';
                 include_once 'class-rm-project.php';
                 // include_once 'class-rm-customfields.php';
                 include_once 'class-rm-client.php';
                 include_once 'class-rm-main.php';
-            }
-            //  elseif (wp_doing_ajax()) {
-            //     // including all ajax classes here.
-            //     include_once 'ajax/class-psc-front-ajax.php';
-            // } else {
-            //     // inluding all admin classes here.
-            //     include_once 'admin/class-psc-woocommerce-product.php';
-            //     include_once 'admin/class-psc-user-profile.php';
             // }
         }
         /**

@@ -1,10 +1,9 @@
-
 .avail-red {
-  background-color: rgb(245, 4, 4);
+  background-color: rgb(230, 72, 72);
   color: #050505;
 }
 .avail-green {
-  background-color: rgb(65, 250, 9);
+  background-color: rgb(129, 240, 96);
   color: #050505;
 }
 .avail-yellow {
@@ -27,16 +26,16 @@
 
 .resource-data-table {
   border-collapse: collapse;
-  margin: 25px 0;
+  /* margin: 25px 0;
   font-size: 1.2em;
   min-width: 400px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15); */
   
 }
 .resource-data-table th,
 .resource-data-table td {
-    padding: 17px 22px;
-    border: 2px solid black;
+    /* padding: 17px 22px;
+    border: 2px solid black; */
 }
 
 .project-data-table {
@@ -49,7 +48,7 @@
 }
 .resource-data-table th,
 .resource-data-table td {
-    padding: 20px 25px;
+    /* padding: 20px 25px; */
    
 }
 
@@ -61,12 +60,12 @@
 }
 
 .datatable {
-	width: 85%;
+	/* width: 85%;
 	margin: auto;
 	text-align: center;
 	background-color: #fff;
 	padding: 10px;
-	border-radius: 5px;
+	border-radius: 5px; */
 }
 .filters{
   float: left;
@@ -74,23 +73,23 @@
   display: inline;
 }
 .main_filter {
-	width: 83%;
+	/* width: 83%;
 	margin: auto;
 	text-align: center;
 	background-color: #fff;
 	padding: 20px;
-	border-radius: 5px;
+	border-radius: 5px; */
 }
 
 
 .main_heading {
-  width: 85%;
+  /* width: 85%;
 	margin: auto;
 	text-align: center;
 	background-color: #fff;
 	padding: 10px;
 	border-radius: 5px;
-  margin-top: 5%;
+  margin-top: 5%; */
 }
 
 .datatable h2 {
@@ -152,7 +151,7 @@
 
 
 .container {
-  max-width: 400px;
+  max-width: 1140px;
   width: 100%;
   margin: 0 auto;
   position: relative;
@@ -169,10 +168,15 @@
 }
 
 #assign-project {
-  background: #F9F9F9;
+  /* background: #F9F9F9;
   padding: 25px;
   margin: 150px 0;
-  box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
+  box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24); */
+  background: white;
+  padding: 40px;
+  margin: 40px 0 0;
+  border-top: 4px solid #00ab80;
+  border-radius: 6px;
 }
 
 #assign-project h3 {
@@ -208,7 +212,7 @@ fieldset {
   border: 1px solid #ccc;
   background: #FFF;
   margin: 0 0 5px;
-  padding: 10px;
+  padding: 5px 10px;
 }
 
 #assign-project input[type="text"]:hover,
@@ -234,15 +238,15 @@ fieldset {
   cursor: pointer;
   width: 100%;
   border: none;
-  background: #4CAF50;
+  background: #00ab80;
   color: #FFF;
   margin: 0 0 5px;
-  padding: 10px;
+  padding: 13px;
   font-size: 15px;
 }
 
 #assign-project button[type="submit"]:hover {
-  background: #43A047;
+  background: #00ae84;
   -webkit-transition: background 0.3s ease-in-out;
   -moz-transition: background 0.3s ease-in-out;
   transition: background-color 0.3s ease-in-out;
@@ -279,3 +283,210 @@ fieldset {
   color: #888;
 }
 
+
+
+/* RM code Main page */
+
+.container-rm {
+  width: 1140px;
+  margin: 0 auto;
+  padding: 60px 0;
+}
+
+.resource-data-table th {
+  border-bottom: 1px solid #d0d0d0;
+  padding: 11px 0;
+}
+
+.resource-data-table th h3 {
+  margin: 0;
+  font-size: 14px;
+  color: #ffffff;
+}
+
+.resource-data-table tr {margin-bottom: 0px;}
+
+.resource-data-table tr td {
+  padding: 15px 0;
+  text-align: center;
+  font-size: 13px;
+}
+
+.resource-data-table tbody tr:nth-child(odd) {
+  background: white;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+.resource-data-table tbody tr:nth-child(even) {
+  background: #fafafa;
+}
+
+table.resource-data-table {background: white;border-radius: 6px;overflow: hidden;}
+
+.resource-data-table tr:first-child {
+  background: #0da87c;
+}
+
+.main_title {
+  position: relative;
+  /* margin-top: 30px; */
+}
+
+.main_title::after {
+  width: 100%;
+  height: 1px;
+  background: #d0d0d0;
+  display: block;
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+}
+
+.main_title h1 {
+  background: #f0f0f1;
+  margin-left: 50px;
+  display: inline-flex;
+  position: relative;
+  z-index: 1;
+  padding: 10px 30px;
+  font-size: 20px;
+  font-weight: 400;
+}
+
+.main_heading {
+  background: white;
+  padding: 30px 30px;
+  border-radius: 6px;
+  display: flex;
+}
+
+.main_heading a {
+  border: 0 !important;
+  display: block;
+  width: 100% !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  margin: 3px 2px !important;
+  padding: 10px !important;
+  background: #00ab80;
+  text-align: center;
+  color: white;
+  text-decoration: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+}
+
+.main_filter {
+  display: flex;
+  background: white;
+  margin: 10px 0 20px;
+  border-radius: 6px;
+  flex-wrap: wrap-reverse;
+}
+
+.main_filter > div {
+  flex: 1;
+}
+
+.main_filter select {
+  border: 1px solid #cecece;
+  /* box-shadow: 0px 0px 5px #00803ca1; */
+  width: 100%;
+}
+
+.main_filter a {
+  background: #00ab80;
+  color: white;
+  padding: 10px;
+  display: block;
+  text-align: center;
+  width: 100%;
+}
+
+.main_filter > div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1 0 15%;
+}
+
+.main_filter > div:last-child {
+  justify-content: flex-end;
+}
+
+.main_filter > div:last-child select {
+  width: 190px;
+}
+
+.main_filter > div > label {
+  width: 100%;
+}
+
+
+/* form */
+
+#assign-project span.select2-selection.select2-selection--single {height: 40px;border: 1px solid #cecece;}
+
+#assign-project .select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 40px;
+}
+
+#assign-project .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 40px;
+}
+
+#assign-project h3 {
+    margin: 10px 0 40px;
+    font-size: 30px;
+}
+
+.main_heading a:nth-child(1)::before {
+  content: '';
+  background: url('/codup/wp-content/uploads/2022/10/briefing.png') no-repeat;
+  background-size: 20px;
+  width: 30px;
+  height: 30px;
+  filter: invert(1);
+  background-position: center;
+  position: absolute;
+  top: 0;
+  left: 100px;
+  bottom: 0;
+  margin: auto;
+}
+.main_heading a:nth-child(2)::before {
+  content: '';
+  background: url('/codup/wp-content/uploads/2022/10/assign.png') no-repeat;
+  background-size: 20px;
+  width: 30px;
+  height: 30px;
+  filter: invert(1);
+  background-position: center;
+  position: absolute;
+  top: 0;
+  left: 90px;
+  bottom: 0;
+  margin: auto;
+}
+.main_heading a:nth-child(3)::before {
+  content: '';
+  background: url('/codup/wp-content/uploads/2022/10/resource.png') no-repeat;
+  background-size: 20px;
+  width: 30px;
+  height: 30px;
+  filter: invert(1);
+  background-position: center;
+  position: absolute;
+  top: 0;
+  left: 100px;
+  bottom: 0;
+  margin: auto;
+}

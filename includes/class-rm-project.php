@@ -17,6 +17,9 @@ if (!class_exists('RM_Project')) {
 			add_action('acf/save_post', [$this, 'project_status_change']);
         }
 
+		/**
+    	 * Creating Project Post Type.
+    	 * */
         public function register_project_post_type(){
 			$supports = array(
 		        'title', // post title
@@ -77,7 +80,6 @@ if (!class_exists('RM_Project')) {
 			$projects_resources =  $wpdb->prefix . 'projects_resources';
 			$project_id = $post->ID;
             $projects_resources = $wpdb->get_results( "SELECT * FROM $projects_resources where project_id = $project_id");
-
 			?>
 			<table class="resource-project-data-table">
 				<thead>
@@ -94,9 +96,6 @@ if (!class_exists('RM_Project')) {
 						<th style="width:9%">
 							<h3> Assign Date </h3>
 						</th>
-						<th style="width:9%">
-							<h3> Status </h3>
-						</th>
 						<th  style="width:9%">
 							<h3> UnAssign </h3>
 						</th>
@@ -104,72 +103,63 @@ if (!class_exists('RM_Project')) {
 				</thead>
 				<tbody>
 				<?php
-			foreach($projects_resources as $key => $value) {
-				$resource_id = $value->resource_id;
-				$allocation = $value->allocation; 
-				$assign_date = $value->created_at;
-				$status = $value->status;
-				$resource_name = get_the_title( $resource_id ); 
-				?>
-					<tr>
-						<td  style="text-align:center;"> 
-							<?php echo $resource_id ?> 
-						</td>
-						<td  style="text-align:center;"> 
-							<?php echo $resource_name ?> 
-						</td>
-						<td  style="text-align:center;"> 
-							<?php echo $allocation.' %' ?> 
-						</td>
-						<td  style="text-align:center;"> 
-							<?php echo $assign_date ?> 
-						</td>
-						<td  style="text-align:center;"> 
-							<?php if($status == 1){ echo "Working"; } if($status == 0){ echo "Un-Assign"; }   ?>
-						</td>
-						<?php 
-						if($status == 1){  ?>
-							<td  style="width:9%; text-align:center;"> 
-								<a class="button button-primary un_assign"  data-pro-id="<?php echo $project_id ?>"   data-res-id="<?php echo $resource_id ?>">Un Assign</a> 
-							</td>
-						<?php } 
-						if($status == 0) { ?>
-							<td  style="width:9%; text-align:center;"> 
-								<a class="button button-primary"  disabled>Not Working</a>
-							</td>
-						<?php } ?>
-						
-					</tr>
-				<?php
-			} 
-			?>	
-
-			</tbody>
-		</table>
-		<?php
-
-
-    	}
+					foreach($projects_resources as $key => $value) {
+						$resource_id = $value->resource_id;
+						$allocation = $value->allocation; 
+						$assign_date = $value->created_at;
+						$status = $value->status;
+						$resource_name = get_the_title( $resource_id ); 
+						?>
+							<tr>
+								<td  style="text-align:center;"> 
+									<?php echo $resource_id ?> 
+								</td>
+								<td  style="text-align:center;"> 
+									<?php echo $resource_name ?> 
+								</td>
+								<td  style="text-align:center;"> 
+									<?php echo $allocation.' %' ?> 
+								</td>
+								<td  style="text-align:center;"> 
+									<?php echo $assign_date ?> 
+								</td>
+								<?php 
+								if($status == 1){  ?>
+									<td  style="width:9%; text-align:center;"> 
+										<a class="button button-primary un_assign"  data-pro-id="<?php echo $project_id ?>"   data-res-id="<?php echo $resource_id ?>">Un Assign</a> 
+									</td>
+								<?php } 
+								if($status == 0) { ?>
+									<td  style="width:9%; text-align:center;"> 
+										<a class="button button-primary"  disabled>Not Working</a>
+									</td>
+								<?php } ?>
+							</tr>
+						<?php
+					} ?>	
+				</tbody>
+			</table> 
+		<?php 
+		}
 
 		/**
-    	 * Unassign Resource from projetc.
+    	 * Unassign Resource from project.
     	 * */
 		public function rm_unassign_resource() {
 
 			$resource_id = $_REQUEST['resourse_id'];
 			$project_id = $_REQUEST['project_id'];
 			global $wpdb;
-
 			$projects_resources    = $wpdb->prefix.'projects_resources';
-			
-			$wpdb->update(
-				$projects_resources, array(
-					'status'            => 0,
-				), array( 
-					'resource_id' => $resource_id,
-					'project_id' => $project_id
-				)
-			);
+				
+				$wpdb->update(
+					$projects_resources, array(
+						'status'            => 0,
+					), array( 
+						'resource_id' => $resource_id,
+						'project_id' => $project_id
+					)
+				);
 			
 			$projects_resources_result = $wpdb->get_results( " SELECT allocation FROM $projects_resources WHERE resource_id = $resource_id and project_id = $project_id  ORDER BY updated_at DESC" );
 			$project_allocation = $projects_resources_result[0]->allocation;
@@ -181,9 +171,8 @@ if (!class_exists('RM_Project')) {
             $resource_allocation = $resources_allocation_result[0]->allocation;
             $fianal_allocation = $resource_allocation - $project_allocation;
 
-
                 if($resources_allocation_id) {
-                    $insert_record = $wpdb->update(
+					$update_record = $wpdb->update(
                         $resources_allocation, array(
                             'allocation'        => $fianal_allocation,
                         ), array( 
@@ -193,68 +182,53 @@ if (!class_exists('RM_Project')) {
                 }
 		}
 
-
+		/**
+    	 * Releasing All resources from project on Project status changing to Complete.
+    	 * 
+		 * */
 		public function project_status_change($post_id){
-			
-			
 
-				global $wpdb, $post;
-				$project_status = get_post_meta($post_id,"project_status",true);
+			global $wpdb, $post;
+			$project_status = get_post_meta($post_id,"project_status",true);
 				
-				if($project_status == "Complete"){
-					print_r($project_status); ;
-					
-					$project_id = $post_id;
-					$projects_resources    = $wpdb->prefix.'projects_resources';
-
-					$quary = "SELECT * FROM $projects_resources WHERE status = 1 and project_id = $project_id";
-                	$projects_resources_results = $wpdb->get_results($quary);
-					
-					// echo "<pre>";
-					// print_r($projects_resources_results->resource_id);
-					// echo "</pre>";
+			if($project_status == "Complete"){	
+				
+				$project_id = $post_id;
+				$projects_resources    = $wpdb->prefix.'projects_resources';
+				$quary = "SELECT * FROM $projects_resources WHERE status = 1 and project_id = $project_id";
+                $projects_resources_results = $wpdb->get_results($quary);
 					 
-					foreach($projects_resources_results as $projects_resources_results) {
+				foreach($projects_resources_results as $projects_resources_results) {
 		
-						$resource_id = $projects_resources_results->resource_id;
-						$project_allocation = $projects_resources_results->allocation;
-					 
-						$insert_record = $wpdb->update(
+					$resource_id = $projects_resources_results->resource_id;
+					$project_allocation = $projects_resources_results->allocation;
+
+						$update_record = $wpdb->update(
 							$projects_resources, array(
 								'status'       => 0,
+							), array (
+								'resource_id' => $resource_id,
+								'project_id' => $project_id,
+							)
+						);
+
+					$resources_allocation    = $wpdb->prefix.'resources_allocation';
+					$quary = "SELECT allocation FROM $resources_allocation where resource_id = $resource_id";
+                	$total_allocation_result = $wpdb->get_results($quary);
+					$total_allocation = $total_allocation_result[0]->allocation; 
+					$allocation = $total_allocation - $project_allocation;
+
+						$update_record = $wpdb->update(
+							$resources_allocation, array(
+								'allocation'       => $allocation,
+		
 							), array (
 								'resource_id' => $resource_id 
 							)
 						);
-
-						$resources_allocation    = $wpdb->prefix.'resources_allocation';
-						$quary = "SELECT allocation FROM $resources_allocation where resource_id = $resource_id";
-
-                		$total_allocation_result = $wpdb->get_results($quary);
-
-						$total_allocation = $total_allocation_result[0]->allocation; 
-
-						$allocation = $total_allocation - $project_allocation;
-
-						$insert_record = $wpdb->update(
-						$resources_allocation, array(
-							'allocation'       => $allocation,
-		
-						), array (
-							'resource_id' => $resource_id 
-						)
-					);
-
-					}
+				}
 			}
 		}
-
-
-
-
-
-
-
 	}         
 }
 
