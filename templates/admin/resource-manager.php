@@ -40,7 +40,9 @@
 </div>
 
 <div class="container-rm">
-
+	<?php
+		if(current_user_can('administrator')){
+	?>
 	<div class="main_title">
 		<h1> Panel Options</h1>
 	</div>
@@ -51,7 +53,9 @@
 		<a id="assign_project" style="padding: 5px; border-radius: 5px;" class="btn-custom"> Assign a Project </a>
 		<a href="<?php echo admin_url( 'post-new.php?post_type=resource' ); ?>" id="add_resource" class="btn-custom"> Add Resource </a>	
 	</div>
-
+	<?php
+		}
+	?>
 	<div class="main_title" style="margin-top:30px">
 		<h1> Resources Details </h1>
 	</div>
@@ -85,7 +89,7 @@
 		
 		<div class="filters"> 
 			<select class="select-dataa" id="status"  name="resource">
-				<option value="1">Assigned</option>
+				<option value="1">Select Un Assigned</option>
 				<option value="0">Un Assigned</option>
 				
 		</select>
@@ -216,7 +220,6 @@
 						$designation = get_post_meta($resource_id,"resource_position",true);
 						$level = get_post_meta($resource_id,"level",true);
 						$manager_name = get_post_meta($resource_id,"manager_name",true);
-						// print_r($designation); die();
 						?>
 						<tr>
 							<td class="resource-column" >

@@ -18,8 +18,9 @@ if (!class_exists('RM_Loader')) {
     class RM_Loader {
 
         public function __construct() { 
-
-            $this->includes();
+             $this->includes();
+            add_action( 'admin_init', [$this,'add_roles']);
+            add_action('admin_menu',[$this, 'remove_menus']);
             add_action('admin_enqueue_scripts', [$this, 'admin_style_and_scripts']);
             add_action( 'admin_menu', [$this, 'resource_manager_admin_menu']);
             add_action( 'init', [$this, 'create_sql_tables']);
@@ -48,10 +49,10 @@ if (!class_exists('RM_Loader')) {
                 [$this, 'filter_resources_page'],
                 'dashicons-menu',
                 6
-            ); 
-            add_submenu_page( 'resource_manager', 'Resource Management', 'Resource Management', 'manage_options',"filter-resources",[$this, 'filter_resources_page'],0);
-            add_submenu_page('resource_manager', 'Designation', 'Designation', 'edit_posts', 'edit-tags.php?taxonomy=designation&post_type=resource',false,2 );
-
+            );
+            if(current_user_can('administrator')){
+                add_submenu_page( 'resource_manager', 'Resource Management', 'Resource Management', 'manage_options',"filter-resources",[$this, 'filter_resources_page'],0);
+            }
         }
 
         /**
@@ -66,14 +67,11 @@ if (!class_exists('RM_Loader')) {
          * Include Files depends on screen.
          */
         public function includes() {
-            // if (is_admin()) {
-                // inluding all frontend classes here.
                 include_once 'class-rm-resource.php';
                 include_once 'class-rm-project.php';
                 // include_once 'class-rm-customfields.php';
                 include_once 'class-rm-client.php';
                 include_once 'class-rm-main.php';
-            // }
         }
         /**
          * Create a bridge table to store projects and
@@ -123,7 +121,35 @@ if (!class_exists('RM_Loader')) {
                 dbDelta( $sql2 );
             }
         }
-     
+
+        /**
+         * Adding Custom Role 'Team Lead' 'Sales' and 'Project Manager'.
+        */
+        public function add_roles() {
+            add_role( 'teamlead_rol', 'Team Lead', array('read' => true, 'level_1' => true ) );
+            $role_obj= get_role('teamlead_rol');
+            $role_obj->add_cap('manage_options');
+            
+            add_role( 'manager_rol', 'Project Manager', array('read' => true, 'level_1' => true ) );
+            $role_obj= get_role('manager_rol');
+            $role_obj->add_cap('manage_options');
+
+            add_role( 'sales_role', 'Sales', array('read' => true, 'level_1' => true ) );
+            $role_obj= get_role('sales_role');
+            $role_obj->add_cap('manage_options'); 
+        }
+
+        /**
+         * Rwmove Manu when user is not admin.
+        */
+        public function remove_menus(){
+            if(!current_user_can('administrator')){
+                remove_menu_page('export-personal-data.php');
+                remove_menu_page('options-general.php');
+                remove_menu_page('edit.php?post_type=acf-field-group');
+                
+            }   
+        } 
     }
 }
 $RM_Loader = new RM_Loader();

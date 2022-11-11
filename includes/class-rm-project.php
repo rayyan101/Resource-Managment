@@ -12,8 +12,7 @@ if (!class_exists('RM_Project')) {
             add_action('init', [$this, 'register_project_post_type']);
             add_action( 'add_meta_boxes', [$this, 'projects_meta_box']) ;
 			add_action('wp_ajax_rm_unassign_resource' , [ $this, 'rm_unassign_resource' ]);
-			add_action('wp_ajax_nopriv_rm_unassign_resource' , [ $this, 'rm_unassign_resource']);
-			//add_action( 'save_post_project', [$this, 'project_status_change'], 9999, 3 );	
+			add_action('wp_ajax_nopriv_rm_unassign_resource' , [ $this, 'rm_unassign_resource']);	
 			add_action('acf/save_post', [$this, 'project_status_change']);
         }
 
@@ -21,6 +20,9 @@ if (!class_exists('RM_Project')) {
     	 * Creating Project Post Type.
     	 * */
         public function register_project_post_type(){
+			if(!current_user_can('administrator')){
+				return;
+				}
 			$supports = array(
 		        'title', // post title
 		        'editor', // post content
@@ -187,10 +189,48 @@ if (!class_exists('RM_Project')) {
     	 * 
 		 * */
 		public function project_status_change($post_id){
+			
 
 			global $wpdb, $post;
 			$project_status = get_post_meta($post_id,"project_status",true);
+		
+			if($project_status == "In-Progress"){	
+				$project_id = $post_id;
+				$projects_resources    = $wpdb->prefix.'projects_resources';
+				$quary = "SELECT * FROM $projects_resources WHERE status = 2 and project_id = $project_id";
+                $projects_resources_results = $wpdb->get_results($quary);
+
+				foreach($projects_resources_results as $projects_resources_results) {
+		
+					$resource_id = $projects_resources_results->resource_id;
+					$project_allocation = $projects_resources_results->allocation;
+
+						$update_record = $wpdb->update(
+							$projects_resources, array(
+								'status'       => 1,
+							), array (
+								'resource_id' => $resource_id,
+								'project_id' => $project_id,
+							)
+						);
 				
+
+					$resources_allocation    = $wpdb->prefix.'resources_allocation';
+					$quary = "SELECT allocation FROM $resources_allocation where resource_id = $resource_id";
+                	$total_allocation_result = $wpdb->get_results($quary);
+					$total_allocation = $total_allocation_result[0]->allocation; 
+					$allocation = $total_allocation + $project_allocation;
+
+						$update_record = $wpdb->update(
+							$resources_allocation, array(
+								'allocation'       => $allocation,
+		
+							), array (
+								'resource_id' => $resource_id 
+							)
+						);
+					}
+			}
 			if($project_status == "Complete"){	
 				
 				$project_id = $post_id;

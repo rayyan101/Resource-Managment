@@ -66,6 +66,9 @@ if (!class_exists('RM_Client')) {
     	 * Creating Client Post Type.
     	 * */
         public function register_client_post_type(){
+			if(!current_user_can('administrator')){
+				return;
+				}
 			$supports = array(
 		        'title', // post title
 		        'editor', // post content
